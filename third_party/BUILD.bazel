@@ -5,6 +5,18 @@ alias(
 )
 
 alias(
+    name = "imgui_core",
+    actual = "@imgui_archive//:imgui_core",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "imgui",
+    actual = "@imgui_archive//:imgui",
+    visibility = ["//visibility:public"],
+)
+
+alias(
     name = "glad",
     actual = "//third_party/glad:glad",
     visibility = ["//visibility:public"],

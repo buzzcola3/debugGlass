@@ -28,6 +28,16 @@ exports_files([
 """,
 )
 
+http_archive(
+	name = "imgui_archive",
+	urls = [
+		"https://github.com/ocornut/imgui/archive/refs/tags/v1.92.2.zip",
+	],
+	sha256 = "8d3398f35ab9c9cf49ccc0516624f086f4242d979e82eacdf83822ce2558d0cb",
+	strip_prefix = "imgui-1.92.2",
+	build_file = "//third_party:imgui.BUILD",
+)
+
 toolchains_ext = use_extension(
 	"@hermetic_cc_toolchain//toolchain:ext.bzl",
 	"toolchains",

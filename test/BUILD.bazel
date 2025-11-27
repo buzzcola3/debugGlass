@@ -14,6 +14,7 @@ cc_binary(
     deps = [
         "//third_party:glad",
         "//third_party:glfw",
+        "//third_party:imgui",
     ],
     linkopts = select({
         ":linux": ["/usr/lib/x86_64-linux-gnu/libGL.so.1"],
