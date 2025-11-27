@@ -9,8 +9,11 @@ DebugGlass is a drop-in Dear ImGui overlay that boots in its own thread so you c
 
 ## Getting Started
 ```bash
-# Run the DebugGlass demo locally (opens a window for ~10 seconds)
+# Run the "Hello DebugGlass" demo locally (opens a window for ~10 seconds)
 bazel run //examples:hello_debugglass
+
+# Launch the richer subwindow/telemetry demo
+bazel run //examples:subwindow_demo
 ```
 The example spins up the DebugGlass overlay, prints "Hello World" to stdout, and exits after a short delay. Use it as a template for wiring the library into your own project.
 
@@ -29,3 +32,21 @@ MinGW import libraries (user32, gdi32, shell32, opengl32) come from the bundled 
 - `examples/` – runnable samples (currently `hello_debugglass`)
 
 Add more DebugGlass-powered examples under `examples/` as new milestones land (custom widgets, telemetry panels, etc.).
+
+## Inspecting Build Targets
+Use Bazel's query command to list every buildable target in this repo:
+```bash
+bazel query //...
+```
+Scope it to a specific package (e.g., `//examples/...`) if you prefer a smaller listing.
+
+## IDE/clangd Support
+We vendor [Hedron's Bazel compile-commands extractor](https://github.com/hedronvision/bazel-compile-commands-extractor) so editors like `clangd` can understand the project. After editing BUILD files, regenerate `compile_commands.json` with:
+```bash
+bazel run :refresh_compile_commands
+```
+By default this refreshes the core library plus the sample binaries (`//examples:hello_debugglass`, `//examples:subwindow_demo`). You can tweak the target list inside `BUILD.bazel` if your workflow needs additional top-level outputs, or fall back to the upstream catch-all command:
+```bash
+bazel run @hedron_compile_commands//:refresh_all
+```
+The generated `compile_commands.json` will appear at the workspace root; point `clangd`, `clang-tidy`, or other C/C++ tooling at that file for richer editor integration.

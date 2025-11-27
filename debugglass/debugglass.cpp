@@ -16,6 +16,8 @@ namespace {
 constexpr char kGlslVersion[] = "#version 330";
 }
 
+namespace debugglass {
+
 DebugGlass::~DebugGlass() {
     Stop();
 }
@@ -121,9 +123,23 @@ void DebugGlass::ThreadMain(DebugGlassOptions options) {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        ImGui::Begin("DebugGlass");
-        ImGui::TextUnformatted("DebugGlass overlay running...");
-        ImGui::End();
+        const auto windows_snapshot = windows.Snapshot();
+        if (windows_snapshot.empty()) {
+            ImGui::Begin("DebugGlass");
+            ImGui::TextUnformatted("DebugGlass overlay running...");
+            ImGui::End();
+        } else {
+            for (const auto& window : windows_snapshot) {
+                if (!window) {
+                    continue;
+                }
+                const std::string& window_name = window->name();
+                const char* title = window_name.empty() ? "Window" : window_name.c_str();
+                ImGui::Begin(title);
+                window->Render();
+                ImGui::End();
+            }
+        }
 
         ImGui::Render();
         int display_w = 0;
@@ -157,3 +173,5 @@ void DebugGlass::ThreadMain(DebugGlassOptions options) {
 
     running_.store(false);
 }
+
+}  // namespace debugglass

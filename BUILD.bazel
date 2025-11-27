@@ -1,11 +1,35 @@
+load("@hedron_compile_commands//:refresh_compile_commands.bzl", "refresh_compile_commands")
+
 cc_library(
 	name = "debugglass",
-	srcs = ["debugglass/debugglass.cpp"],
-	hdrs = ["debugglass/debugglass.h"],
+	srcs = [
+		"debugglass/debugglass.cpp",
+		"debugglass/subwindow_registry.cpp",
+		"debugglass/widgets/graph.cpp",
+		"debugglass/widgets/structure.cpp",
+		"debugglass/widgets/variable.cpp",
+	],
+	hdrs = [
+		"debugglass/debugglass.h",
+		"debugglass/subwindow_registry.h",
+		"debugglass/widgets/graph.h",
+		"debugglass/widgets/structure.h",
+		"debugglass/widgets/variable.h",
+		"debugglass/widgets/window_content.h",
+	],
 	deps = [
 		"//third_party:glad",
 		"//third_party:glfw",
 		"//third_party:imgui",
 	],
 	visibility = ["//visibility:public"],
+)
+
+refresh_compile_commands(
+	name = "refresh_compile_commands",
+	targets = [
+		"//:debugglass",
+		"//examples:hello_debugglass",
+		"//examples:subwindow_demo",
+	],
 )

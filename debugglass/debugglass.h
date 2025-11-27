@@ -5,6 +5,9 @@
 #include <string>
 #include <thread>
 
+#include "debugglass/subwindow_registry.h"
+namespace debugglass {
+
 struct DebugGlassOptions {
     int width = 640;
     int height = 480;
@@ -24,6 +27,8 @@ public:
     void Stop();
     bool IsRunning() const;
 
+    SubWindowRegistry windows;
+
 private:
     void ThreadMain(DebugGlassOptions options);
 
@@ -31,3 +36,5 @@ private:
     std::atomic<bool> running_{false};
     std::atomic<bool> stop_requested_{false};
 };
+
+}  // namespace debugglass

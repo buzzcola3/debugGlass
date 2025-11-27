@@ -1,17 +1,17 @@
-#include "debugglass/debugglass.h"
-
 #include <chrono>
 #include <iostream>
 #include <thread>
+
+#include "debugglass/debugglass.h"
 
 namespace {
 constexpr auto kDemoDuration = std::chrono::seconds(10);
 }
 
 int main() {
-    DebugGlass monitor;
+    debugglass::DebugGlass monitor;
 
-    DebugGlassOptions options;
+    debugglass::DebugGlassOptions options;
     options.title = "DebugGlass Demo";
 
     if (!monitor.Run(options)) {
