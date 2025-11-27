@@ -1,5 +1,3 @@
-load("@hedron_compile_commands//:refresh_compile_commands.bzl", "refresh_compile_commands")
-
 cc_library(
 	name = "debugglass",
 	srcs = [
@@ -23,13 +21,4 @@ cc_library(
 		"//third_party:imgui",
 	],
 	visibility = ["//visibility:public"],
-)
-
-refresh_compile_commands(
-	name = "refresh_compile_commands",
-	targets = [
-		"//:debugglass",
-		"//examples:hello_debugglass",
-		"//examples:subwindow_demo",
-	],
 )

@@ -43,9 +43,9 @@ Scope it to a specific package (e.g., `//examples/...`) if you prefer a smaller 
 ## IDE/clangd Support
 We vendor [Hedron's Bazel compile-commands extractor](https://github.com/hedronvision/bazel-compile-commands-extractor) so editors like `clangd` can understand the project. After editing BUILD files, regenerate `compile_commands.json` with:
 ```bash
-bazel run :refresh_compile_commands
+bazel run //devtools:refresh_compile_commands
 ```
-By default this refreshes the core library plus the sample binaries (`//examples:hello_debugglass`, `//examples:subwindow_demo`). You can tweak the target list inside `BUILD.bazel` if your workflow needs additional top-level outputs, or fall back to the upstream catch-all command:
+By default this refreshes the core library plus the sample binaries (`//examples:hello_debugglass`, `//examples:subwindow_demo`). You can tweak the target list inside `devtools/BUILD.bazel` if your workflow needs additional top-level outputs, or fall back to the upstream catch-all command:
 ```bash
 bazel run @hedron_compile_commands//:refresh_all
 ```
