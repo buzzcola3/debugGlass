@@ -38,3 +38,15 @@ cc_binary(
         "//conditions:default": [],
     }),
 )
+
+cc_binary(
+    name = "background_demo",
+    srcs = ["background_demo/main.cpp"],
+    deps = [
+        "//:debugglass",
+    ],
+    linkopts = select({
+        ":linux": ["/usr/lib/x86_64-linux-gnu/libGL.so.1"],
+        "//conditions:default": [],
+    }),
+)

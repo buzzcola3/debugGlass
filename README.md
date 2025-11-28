@@ -1,6 +1,6 @@
 # DebugGlass
 
-DebugGlass is a drop-in Dear ImGui overlay that boots in its own thread so you can instrument any native app quickly. The repository also doubles as a cross-platform Bazel + Zig toolchain playground, demonstrating hermetic builds for Linux/macOS/Windows without relying on host compilers.
+DebugGlass is a Dear ImGui overlay that runs on a dedicated thread so native applications can expose runtime telemetry without blocking their main loop. This repository also documents a cross-platform Bazel + Zig toolchain configuration for hermetic builds on Linux, macOS, and Windows.
 
 ## Prerequisites
 - Bazel 8+ with Bzlmod enabled (default)
@@ -9,32 +9,37 @@ DebugGlass is a drop-in Dear ImGui overlay that boots in its own thread so you c
 
 ## Getting Started
 ```bash
-# Run the "Hello DebugGlass" demo locally (opens a window for ~10 seconds)
-bazel run //examples:hello_debugglass
-
-# Launch the richer subwindow/telemetry demo
-bazel run //examples:subwindow_demo
-
-# Preview the standalone message monitor widget
-bazel run //examples:message_monitor_demo
+bazel run //examples:hello_debugglass          # minimal overlay bootstrap
+bazel run //examples:subwindow_demo            # graphs, structures, message monitor
+bazel run //examples:message_monitor_demo      # standalone message monitor widget
+bazel run //examples:background_demo           # custom background rendering
 ```
-The example spins up the DebugGlass overlay, prints "Hello World" to stdout, and exits after a short delay. Use it as a template for wiring the library into your own project.
+`hello_debugglass` opens the overlay, prints a status line, and exits after a short delay. Use it as a skeleton for integrating DebugGlass into other binaries.
 
 ## Cross-compiling with Zig
-We register all Zig toolchains from `hermetic_cc_toolchain`, so you can target any supported platform:
+All Zig toolchains from `hermetic_cc_toolchain` are registered, so any supported platform can be targeted:
 ```bash
 # Example: build the GLFW sample for Windows from Linux/macOS
 bazel build --platforms=@zig_sdk//platform:windows_amd64 //test:window
 ```
-MinGW import libraries (user32, gdi32, shell32, opengl32) come from the bundled `llvm_mingw_sdk` archive and are wired in through `third_party/windows_sdk` so cross-linking succeeds without a local Windows SDK.
+MinGW import libraries (user32, gdi32, shell32, opengl32) come from the bundled `llvm_mingw_sdk` archive via `third_party/windows_sdk`, enabling cross-linking without a host Windows SDK.
 
 ## Project Layout
 - `MODULE.bazel` – Bzlmod dependencies (hermetic Zig toolchain, GLFW, llvm-mingw SDK)
 - `third_party/` – wrappers for GLFW and platform SDK bits
 - `debugglass/` – library sources (`debugglass.h/.cpp`)
-- `examples/` – runnable samples (`hello_debugglass`, `subwindow_demo`, `message_monitor_demo`)
+- `examples/` – runnable samples (`hello_debugglass`, `subwindow_demo`, `message_monitor_demo`, `background_demo`)
 
-Add more DebugGlass-powered examples under `examples/` as new milestones land (custom widgets, telemetry panels, etc.).
+## Rendering Custom Backgrounds
+Register a callback to draw behind the overlay before ImGui renders each frame:
+```cpp
+debugglass::DebugGlass monitor;
+monitor.SetBackgroundRenderer([]() {
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT);
+});
+```
+Use the callback to upload textures, draw quads, or simply change the clear color. `examples/background_demo` shows the pattern in context.
 
 ## Inspecting Build Targets
 Use Bazel's query command to list every buildable target in this repo:

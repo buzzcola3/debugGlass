@@ -9,7 +9,9 @@
 #include <imgui.h>
 
 #include <iostream>
+#include <mutex>
 #include <thread>
+#include <utility>
 
 namespace {
 constexpr char kGlslVersion[] = "#version 330";
@@ -43,6 +45,11 @@ void DebugGlass::Stop() {
 
 bool DebugGlass::IsRunning() const {
     return running_.load();
+}
+
+void DebugGlass::SetBackgroundRenderer(BackgroundRenderCallback callback) {
+    std::lock_guard<std::mutex> lock(background_mutex_);
+    background_callback_ = std::move(callback);
 }
 
 void DebugGlass::ThreadMain(DebugGlassOptions options) {
@@ -146,6 +153,16 @@ void DebugGlass::ThreadMain(DebugGlassOptions options) {
         glfwGetFramebufferSize(window, &display_w, &display_h);
         glViewport(0, 0, display_w, display_h);
         glClear(GL_COLOR_BUFFER_BIT);
+
+        BackgroundRenderCallback background;
+        {
+            std::lock_guard<std::mutex> lock(background_mutex_);
+            background = background_callback_;
+        }
+        if (background) {
+            background();
+        }
+
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         glfwSwapBuffers(window);

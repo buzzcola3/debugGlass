@@ -2,6 +2,8 @@
 
 #include <atomic>
 #include <chrono>
+#include <functional>
+#include <mutex>
 #include <string>
 #include <thread>
 
@@ -26,6 +28,8 @@ public:
     bool Run(const DebugGlassOptions& options = DebugGlassOptions{});
     void Stop();
     bool IsRunning() const;
+    using BackgroundRenderCallback = std::function<void()>;
+    void SetBackgroundRenderer(BackgroundRenderCallback callback);
 
     SubWindowRegistry windows;
 
@@ -35,6 +39,8 @@ private:
     std::thread worker_;
     std::atomic<bool> running_{false};
     std::atomic<bool> stop_requested_{false};
+    mutable std::mutex background_mutex_;
+    BackgroundRenderCallback background_callback_;
 };
 
 }  // namespace debugglass
