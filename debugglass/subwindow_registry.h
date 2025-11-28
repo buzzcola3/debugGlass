@@ -7,10 +7,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "debugglass/widgets/graph.h"
-#include "debugglass/widgets/structure.h"
-#include "debugglass/widgets/variable.h"
-#include "debugglass/widgets/window_content.h"
+#include "debugglass/widgets/tab.h"
 
 namespace debugglass {
 
@@ -18,21 +15,30 @@ class SubWindow {
 public:
     using RenderCallback = std::function<void()>;
 
+    class TabCollection {
+    public:
+        explicit TabCollection(SubWindow& owner) : owner_(owner) {}
+
+        Tab& add(std::string label) { return owner_.AddTab(std::move(label)); }
+        Tab& Add(std::string label) { return owner_.AddTab(std::move(label)); }
+        Tab* find(const std::string& label) { return owner_.FindTab(label); }
+        const Tab* find(const std::string& label) const { return owner_.FindTab(label); }
+
+    private:
+        SubWindow& owner_;
+    };
+
     explicit SubWindow(std::string name);
 
     const std::string& name() const noexcept { return name_; }
 
+    TabCollection tabs;
+
     void SetRenderCallback(RenderCallback callback);
 
-    Graph& AddGraph(std::string label);
-    Graph* FindGraph(const std::string& label);
-    const Graph* FindGraph(const std::string& label) const;
-
-    Variable& AddVariable(std::string label);
-    Variable* FindVariable(const std::string& label);
-    const Variable* FindVariable(const std::string& label) const;
-
-    Structure& AddStructure(std::string label);
+    Tab& AddTab(std::string label);
+    Tab* FindTab(const std::string& label);
+    const Tab* FindTab(const std::string& label) const;
 
     void Render() const;
 
@@ -40,7 +46,7 @@ private:
     std::string name_;
     mutable std::mutex content_mutex_;
     RenderCallback callback_;
-    std::vector<std::shared_ptr<WindowContent>> widgets_;
+    std::vector<std::shared_ptr<Tab>> tabs_;
 };
 
 class SubWindowRegistry {

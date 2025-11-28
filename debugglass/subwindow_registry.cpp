@@ -4,105 +4,75 @@
 
 #include <imgui.h>
 
-#include "debugglass/widgets/graph.h"
-#include "debugglass/widgets/structure.h"
-#include "debugglass/widgets/variable.h"
 
 namespace debugglass {
 
-SubWindow::SubWindow(std::string name) : name_(std::move(name)) {}
+SubWindow::SubWindow(std::string name) : name_(std::move(name)), tabs(*this) {}
 
 void SubWindow::SetRenderCallback(RenderCallback callback) {
     std::lock_guard<std::mutex> lock(content_mutex_);
     callback_ = std::move(callback);
 }
 
-Graph& SubWindow::AddGraph(std::string label) {
-    auto graph = std::make_shared<Graph>(std::move(label));
+Tab& SubWindow::AddTab(std::string label) {
+    auto tab = std::make_shared<Tab>(std::move(label));
     std::lock_guard<std::mutex> lock(content_mutex_);
-    widgets_.push_back(graph);
-    return *graph;
+    tabs_.push_back(tab);
+    return *tab;
 }
 
-Graph* SubWindow::FindGraph(const std::string& label) {
+Tab* SubWindow::FindTab(const std::string& label) {
     std::lock_guard<std::mutex> lock(content_mutex_);
-    for (const auto& widget : widgets_) {
-        auto graph = std::dynamic_pointer_cast<Graph>(widget);
-        if (graph && graph->label() == label) {
-            return graph.get();
+    for (const auto& tab : tabs_) {
+        if (tab && tab->label() == label) {
+            return tab.get();
         }
     }
     return nullptr;
 }
 
-const Graph* SubWindow::FindGraph(const std::string& label) const {
+const Tab* SubWindow::FindTab(const std::string& label) const {
     std::lock_guard<std::mutex> lock(content_mutex_);
-    for (const auto& widget : widgets_) {
-        auto graph = std::dynamic_pointer_cast<Graph>(widget);
-        if (graph && graph->label() == label) {
-            return graph.get();
+    for (const auto& tab : tabs_) {
+        if (tab && tab->label() == label) {
+            return tab.get();
         }
     }
     return nullptr;
-}
-
-Variable& SubWindow::AddVariable(std::string label) {
-    auto variable = std::make_shared<Variable>(std::move(label));
-    std::lock_guard<std::mutex> lock(content_mutex_);
-    widgets_.push_back(variable);
-    return *variable;
-}
-
-Variable* SubWindow::FindVariable(const std::string& label) {
-    std::lock_guard<std::mutex> lock(content_mutex_);
-    for (const auto& widget : widgets_) {
-        auto variable = std::dynamic_pointer_cast<Variable>(widget);
-        if (variable && variable->label() == label) {
-            return variable.get();
-        }
-    }
-    return nullptr;
-}
-
-const Variable* SubWindow::FindVariable(const std::string& label) const {
-    std::lock_guard<std::mutex> lock(content_mutex_);
-    for (const auto& widget : widgets_) {
-        auto variable = std::dynamic_pointer_cast<Variable>(widget);
-        if (variable && variable->label() == label) {
-            return variable.get();
-        }
-    }
-    return nullptr;
-}
-
-Structure& SubWindow::AddStructure(std::string label) {
-    auto structure = std::make_shared<Structure>(std::move(label));
-    std::lock_guard<std::mutex> lock(content_mutex_);
-    widgets_.push_back(structure);
-    return *structure;
 }
 
 void SubWindow::Render() const {
     SubWindow::RenderCallback callback_copy;
-    std::vector<std::shared_ptr<WindowContent>> widgets_snapshot;
+    std::vector<std::shared_ptr<Tab>> tabs_snapshot;
     {
         std::lock_guard<std::mutex> lock(content_mutex_);
         callback_copy = callback_;
-        widgets_snapshot = widgets_;
+        tabs_snapshot = tabs_;
     }
 
     if (callback_copy) {
         callback_copy();
     }
 
-    for (const auto& widget : widgets_snapshot) {
-        if (widget) {
-            widget->Render();
-        }
+    if (tabs_snapshot.empty()) {
+        ImGui::TextUnformatted("No tabs defined");
+        return;
     }
 
-    if (!callback_copy && widgets_snapshot.empty()) {
-        ImGui::TextUnformatted("No content assigned");
+    std::string tab_bar_id = "Tabs##" + name_;
+    if (ImGui::BeginTabBar(tab_bar_id.c_str())) {
+        for (const auto& tab : tabs_snapshot) {
+            if (!tab) {
+                continue;
+            }
+            const std::string& label = tab->label();
+            const char* tab_title = label.empty() ? "Tab" : label.c_str();
+            if (ImGui::BeginTabItem(tab_title)) {
+                tab->Render();
+                ImGui::EndTabItem();
+            }
+        }
+        ImGui::EndTabBar();
     }
 }
 

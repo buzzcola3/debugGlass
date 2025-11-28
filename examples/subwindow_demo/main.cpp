@@ -15,17 +15,19 @@ int main() {
     debugglass::DebugGlass monitor;
 
     auto& stats_window = monitor.windows.add("Stats");
-    stats_window.SetRenderCallback([]() {
+    auto& stats_tab = stats_window.tabs.add("tab1");
+    stats_tab.SetRenderCallback([]() {
         ImGui::TextUnformatted("Live Waveform");
     });
-    auto& waveform = stats_window.AddGraph("Waveform");
+    auto& waveform = stats_tab.AddGraph("Waveform");
     waveform.SetRange(0.0f, 1.0f);
 
     auto& variables_window = monitor.windows.add("Variables");
-    variables_window.SetRenderCallback([]() {
+    auto& variables_tab = variables_window.tabs.add("tab1");
+    variables_tab.SetRenderCallback([]() {
         ImGui::TextUnformatted("Tracked Variables");
     });
-    auto& systems_structure = variables_window.AddStructure("Systems");
+    auto& systems_structure = variables_tab.AddStructure("Systems");
     auto& mode_variable = systems_structure.AddVariable("Mode");
     mode_variable.SetValue("demo");
     auto& fps_variable = systems_structure.AddVariable("FPS Target");
