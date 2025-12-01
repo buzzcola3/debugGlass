@@ -38,7 +38,7 @@ private:
         std::string id;
         std::string value;
         uint64_t update_count = 0;
-        std::chrono::steady_clock::time_point last_update;
+        std::chrono::system_clock::time_point timestamp;
     };
 
     std::string label_;
